@@ -17,13 +17,12 @@ nlp     = pipeline("zero-shot-classification",
 clip_model, clip_pre = clip.load("ViT-B/32", device=device)
 
 CANDIDATE_LABELS = [
-    # original 10
     "New York", "Los Angeles", "Chicago", "Houston", "Phoenix",
     "Philadelphia", "San Antonio", "San Diego", "Dallas", "San Jose",
-    # extra 7
     "Seattle", "Portland", "Detroit", "San Francisco",
     "Washington", "Denver", "Atlanta"
 ]
+
 
 # ── 2.  FastAPI / file system scaffolding ──────────────────────
 app = FastAPI()
@@ -42,7 +41,7 @@ def nlp_like(text: str) -> dict[str, float]:
 
 def clip_like(path: str) -> dict[str, float]:
     img = Image.open(path).convert("RGB")
-    img_t = clip_pre(img).unsqueeze(0).to(device)
+    img_t = clip_pre(img).unsqueeze(0).to(device) 
     txt_t = clip.tokenize(CANDIDATE_LABELS).to(device)
     with torch.no_grad():
         i_f = clip_model.encode_image(img_t)

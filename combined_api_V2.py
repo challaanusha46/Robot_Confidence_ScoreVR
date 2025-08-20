@@ -15,7 +15,7 @@ nlp     = pipeline("zero-shot-classification",
                    model="facebook/bart-large-mnli",
                    device=0 if torch.cuda.is_available() else -1)
 clip_model, clip_pre = clip.load("ViT-B/32", device=device)
-
+ 
 CANDIDATE_LABELS = [
     "New York", "Los Angeles", "Chicago", "Houston", "Phoenix",
     "Philadelphia", "San Antonio", "San Diego", "Dallas", "San Jose",
