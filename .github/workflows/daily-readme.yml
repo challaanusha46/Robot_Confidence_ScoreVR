@@ -1,0 +1,65 @@
+name: Daily README update (direct to main)
+
+on:
+  schedule:
+    - cron: "15 10 * * *"  # daily UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Update README daily section
+        run: |
+          python - << 'PY'
+          import re, datetime
+          from pathlib import Path
+
+          candidates = [Path("README.md"), Path("readme.md")]
+          readme = next((p for p in candidates if p.exists()), None)
+          if not readme:
+            readme = Path("README.md")
+            readme.write_text("# Project\n\n## Daily update\n\n<!-- DAILY:START -->\n<!-- DAILY:END -->\n", encoding="utf-8")
+
+          txt = readme.read_text(encoding="utf-8")
+
+          if "<!-- DAILY:START -->" not in txt or "<!-- DAILY:END -->" not in txt:
+            txt = txt.rstrip() + "\n\n## Daily update\n\n<!-- DAILY:START -->\n_Last updated: (automation will fill this)_\n<!-- DAILY:END -->\n"
+
+          now = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+          new_block = "\n".join([
+            f"_Last updated: {now}_",
+            "",
+            "- Automated daily refresh via GitHub Actions."
+          ])
+
+          pattern = r"(<!-- DAILY:START -->)(.*?)(<!-- DAILY:END -->)"
+          def repl(m):
+            return f"{m.group(1)}\n{new_block}\n{m.group(3)}"
+
+          new_txt, n = re.subn(pattern, repl, txt, flags=re.S)
+          if n == 0:
+            raise SystemExit("Markers not found / could not update.")
+
+          readme.write_text(new_txt, encoding="utf-8")
+          print(f"Updated {readme}")
+          PY
+
+      - name: Commit & push to main
+        run: |
+          if git diff --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md readme.md .github/workflows/daily-readme.yml || true
+          git commit -m "chore: daily README update"
+          git push

@@ -108,4 +108,8 @@ curl -F "files=@Positive_Imgs/Clue_01.png" \
 
 ---
 
+## Daily update
 
+<!-- DAILY:START -->
+_Last updated: (automation will fill this)_
+<!-- DAILY:END -->
