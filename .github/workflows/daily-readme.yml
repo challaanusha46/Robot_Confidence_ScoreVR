@@ -2,7 +2,7 @@ name: Daily README update (direct to main)
 
 on:
   schedule:
-    - cron: "15 10 * * *"  # daily UTC
+    - cron: "15 10 * * *"
   workflow_dispatch: {}
 
 permissions:
@@ -16,9 +16,13 @@ jobs:
         with:
           ref: main
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
       - name: Update README daily section
         run: |
-          python - << 'PY'
+          python3 - << 'PY'
           import re, datetime
           from pathlib import Path
 
@@ -40,6 +44,7 @@ jobs:
             "- Automated daily refresh via GitHub Actions."
           ])
 
+          # ✅ FIXED: closing parenthesis added
           pattern = r"(<!-- DAILY:START -->)(.*?)(<!-- DAILY:END -->)"
           def repl(m):
             return f"{m.group(1)}\n{new_block}\n{m.group(3)}"
